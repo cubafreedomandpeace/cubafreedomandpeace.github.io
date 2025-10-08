@@ -1,5 +1,5 @@
 title: Cuba Freedom and Peace
-description: News and updates about Cuba
+description: Voices and news for a peaceful Cuba
 baseurl: ""
 url: "https://yunior123.github.io/cubafreedomandpeace"
 
@@ -16,5 +16,5 @@ defaults:
     values:
       layout: "post"
 
-media_folder: "assets/images/uploads"
-public_folder: "/assets/images/uploads"
+markdown: kramdown
+permalink: /:year/:month/:day/:title.html
