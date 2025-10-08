@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: yourusername/cubafreedomandpeace
+  repo: yunior123/cubafreedomandpeace
   branch: main
 
 media_folder: "assets/images/uploads"
