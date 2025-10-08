@@ -6,7 +6,6 @@
     <title>Cuba Freedom & Peace - Unidos por la libertad y la paz</title>
     <meta name="description" content="Supporting democracy, human rights, and peaceful change in Cuba.">
     
-    <!-- All scripts loaded from CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -28,18 +27,10 @@
 
     <script type="text/babel">
         const { useState } = React;
+        // Destructure icon components directly
         const { Globe, Heart, Users, BookOpen, ChevronRight, Edit, Trash2, Plus, X, Save } = lucide;
 
-        const Icon = ({ icon: IconComponent, ...props }) => {
-            const ref = React.useRef(null);
-            React.useEffect(() => {
-                if (ref.current) {
-                    ref.current.innerHTML = '';
-                    lucide.createElement(IconComponent).render(ref.current);
-                }
-            }, [IconComponent]);
-            return React.createElement('i', { ref, ...props });
-        };
+        // *** REMOVED THE BROKEN CUSTOM ICON COMPONENT ***
 
         const CubaFreedomSite = () => {
             const [posts, setPosts] = useState([
@@ -138,7 +129,8 @@
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                             <div className="flex justify-between items-center py-4">
                                 <div className="flex items-center space-x-3">
-                                    <Icon icon="Globe" className="w-10 h-10 text-blue-600" />
+                                    {/* FIXED: Use Globe component directly */}
+                                    <Globe className="w-10 h-10 text-blue-600" />
                                     <div>
                                         <h1 className="text-2xl font-bold text-gray-900">Cuba Freedom & Peace</h1>
                                         <p className="text-sm text-gray-600">Unidos por la libertad y la paz</p>
@@ -169,7 +161,8 @@
                                 <div className="flex justify-between items-center mb-6">
                                     <h2 className="text-2xl font-bold">Admin Login</h2>
                                     <button onClick={() => setShowAdminLogin(false)} className="text-gray-500 hover:text-gray-700">
-                                        <Icon icon="X" className="w-6 h-6" />
+                                        {/* FIXED: Use X component directly */}
+                                        <X className="w-6 h-6" />
                                     </button>
                                 </div>
                                 <input
@@ -194,7 +187,8 @@
                                 <div className="flex justify-between items-center mb-6">
                                     <h2 className="text-2xl font-bold">{editingPost ? 'Edit Post' : 'New Post'}</h2>
                                     <button onClick={handleCancelEdit} className="text-gray-500 hover:text-gray-700">
-                                        <Icon icon="X" className="w-6 h-6" />
+                                        {/* FIXED: Use X component directly */}
+                                        <X className="w-6 h-6" />
                                     </button>
                                 </div>
                                 <div className="space-y-4">
@@ -246,7 +240,8 @@
                                 </div>
                                 <div className="flex space-x-4 mt-6">
                                     <button onClick={handleSavePost} className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center">
-                                        <Icon icon="Save" className="w-5 h-5 mr-2" />
+                                        {/* FIXED: Use Save component directly */}
+                                        <Save className="w-5 h-5 mr-2" />
                                         Save Post
                                     </button>
                                     <button onClick={handleCancelEdit} className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 transition">
@@ -268,23 +263,27 @@
                                         We advocate for human rights, democracy, and peaceful change in Cuba. Join us in supporting the Cuban people's quest for freedom and dignity.
                                     </p>
                                     <button onClick={() => setCurrentView('posts')} className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition inline-flex items-center">
-                                        Learn More <Icon icon="ChevronRight" className="ml-2 w-5 h-5" />
+                                        Learn More {/* FIXED: Use ChevronRight component directly */}
+                                        <ChevronRight className="ml-2 w-5 h-5" />
                                     </button>
                                 </div>
 
                                 <div className="grid md:grid-cols-3 gap-8 mb-16">
                                     <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition">
-                                        <Icon icon="Heart" className="w-12 h-12 text-red-500 mb-4" />
+                                        {/* FIXED: Use Heart component directly */}
+                                        <Heart className="w-12 h-12 text-red-500 mb-4" />
                                         <h3 className="text-2xl font-bold mb-3">Human Rights</h3>
                                         <p className="text-gray-600">Advocating for the fundamental rights and freedoms of all Cuban citizens.</p>
                                     </div>
                                     <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition">
-                                        <Icon icon="Users" className="w-12 h-12 text-blue-500 mb-4" />
+                                        {/* FIXED: Use Users component directly */}
+                                        <Users className="w-12 h-12 text-blue-500 mb-4" />
                                         <h3 className="text-2xl font-bold mb-3">Unity</h3>
                                         <p className="text-gray-600">Building bridges and fostering solidarity within and beyond Cuban communities.</p>
                                     </div>
                                     <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition">
-                                        <Icon icon="BookOpen" className="w-12 h-12 text-green-500 mb-4" />
+                                        {/* FIXED: Use BookOpen component directly */}
+                                        <BookOpen className="w-12 h-12 text-green-500 mb-4" />
                                         <h3 className="text-2xl font-bold mb-3">Education</h3>
                                         <p className="text-gray-600">Raising awareness about Cuba's situation and promoting informed dialogue.</p>
                                     </div>
@@ -322,7 +321,8 @@
                                     <h2 className="text-4xl font-bold">News & Updates</h2>
                                     {isAdmin && (
                                         <button onClick={() => { setShowPostForm(true); setEditingPost(null); }} className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition inline-flex items-center">
-                                            <Icon icon="Plus" className="w-5 h-5 mr-2" />
+                                            {/* FIXED: Use Plus component directly */}
+                                            <Plus className="w-5 h-5 mr-2" />
                                             New Post
                                         </button>
                                     )}
@@ -343,10 +343,12 @@
                                                         {isAdmin && (
                                                             <div className="flex space-x-2">
                                                                 <button onClick={() => handleEditPost(post)} className="text-blue-600 hover:text-blue-700">
-                                                                    <Icon icon="Edit" className="w-5 h-5" />
+                                                                    {/* FIXED: Use Edit component directly */}
+                                                                    <Edit className="w-5 h-5" />
                                                                 </button>
                                                                 <button onClick={() => handleDeletePost(post.id)} className="text-red-600 hover:text-red-700">
-                                                                    <Icon icon="Trash2" className="w-5 h-5" />
+                                                                    {/* FIXED: Use Trash2 component directly */}
+                                                                    <Trash2 className="w-5 h-5" />
                                                                 </button>
                                                             </div>
                                                         )}
@@ -423,9 +425,10 @@
                                     <h3 className="text-xl font-bold mb-4">Connect</h3>
                                     <p className="text-gray-400 mb-4">Stay updated with our latest news and initiatives.</p>
                                     <div className="flex space-x-4">
-                                        <Icon icon="Globe" className="w-6 h-6 text-gray-400 hover:text-white cursor-pointer transition" />
-                                        <Icon icon="Heart" className="w-6 h-6 text-gray-400 hover:text-white cursor-pointer transition" />
-                                        <Icon icon="Users" className="w-6 h-6 text-gray-400 hover:text-white cursor-pointer transition" />
+                                        {/* FIXED: Use icon components directly */}
+                                        <Globe className="w-6 h-6 text-gray-400 hover:text-white cursor-pointer transition" />
+                                        <Heart className="w-6 h-6 text-gray-400 hover:text-white cursor-pointer transition" />
+                                        <Users className="w-6 h-6 text-gray-400 hover:text-white cursor-pointer transition" />
                                     </div>
                                 </div>
                             </div>
