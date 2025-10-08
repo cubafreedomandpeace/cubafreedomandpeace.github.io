@@ -1,11 +1,9 @@
 title: Cuba Freedom and Peace
 description: News and updates about Cuba
 baseurl: ""
-url: "https://cubafreedomandpeace.github.io"
+url: "https://yunior123.github.io/cubafreedomandpeace"
 
 theme: minima
-plugins:
-  - jekyll-feed
 
 collections:
   posts:
