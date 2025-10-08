@@ -1,21 +1,24 @@
 ---
 layout: default
+title: Cuba Freedom and Peace
 ---
-<h2>Latest Posts</h2>
-<ul>
-  {% for post in paginator.posts %}
-    <li>
-      <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
-      <small>({{ post.date | date: "%B %d, %Y" }})</small>
-    </li>
-  {% endfor %}
-</ul>
 
-<div class="pagination">
-  {% if paginator.previous_page %}
-    <a href="{{ paginator.previous_page_path | relative_url }}">Previous</a>
-  {% endif %}
-  {% if paginator.next_page %}
-    <a href="{{ paginator.next_page_path | relative_url }}">Next</a>
-  {% endif %}
-</div>
+<section class="hero">
+  <h1>Welcome to Cuba Freedom and Peace</h1>
+  <p>News, articles, and updates about Cuba.</p>
+</section>
+
+<section class="latest-posts">
+  <h2>Latest Posts</h2>
+  <ul>
+    {% for post in site.posts %}
+      <li>
+        {% if post.image %}
+          <img src="{{ post.image }}" alt="{{ post.title }}">
+        {% endif %}
+        <h3><a href="{{ post.url }}">{{ post.title }}</a></h3>
+        <p>{{ post.excerpt }}</p>
+      </li>
+    {% endfor %}
+  </ul>
+</section>

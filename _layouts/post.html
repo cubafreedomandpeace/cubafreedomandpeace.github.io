@@ -1,11 +1,14 @@
 ---
 layout: default
 ---
+
 <article class="post">
   <h1>{{ page.title }}</h1>
-  <p class="date">{{ page.date | date: "%B %d, %Y" }}</p>
   {% if page.image %}
-  <img src="{{ page.image | relative_url }}" alt="{{ page.title }}" class="featured">
+    <img src="{{ page.image }}" alt="{{ page.title }}">
   {% endif %}
-  {{ content }}
+  <p class="date">{{ page.date | date: "%B %d, %Y" }}</p>
+  <div class="content">
+    {{ content }}
+  </div>
 </article>

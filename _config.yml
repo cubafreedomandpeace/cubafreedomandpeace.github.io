@@ -1,13 +1,22 @@
-title: Cuba Freedom
-description: "Blog about the situation in Cuba – Noticias y opiniones."
+title: Cuba Freedom and Peace
+description: News and updates about Cuba
 baseurl: ""
-url: "https://cubafreedom.github.io"
+url: "https://cubafreedomandpeace.github.io"
+
 theme: minima
 plugins:
   - jekyll-feed
-  - jekyll-paginate
-  - jekyll-multiple-languages-plugin
-languages: ["en", "es"]
-default_lang: "en"
-paginate: 5
-paginate_path: "/page:num/"
+
+collections:
+  posts:
+    output: true
+
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+
+media_folder: "assets/images/uploads"
+public_folder: "/assets/images/uploads"
