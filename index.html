@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cuba Freedom & Peace - Unidos por la libertad y la paz</title>
-    <meta name="description" content="Supporting democracy, human rights, and peaceful change in Cuba.">
+    <title>Cuba Freedom & Peace - Vanilla JS</title>
+    <meta name="description" content="Supporting democracy, human rights, and peaceful change in Cuba (Vanilla JS Version).">
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
@@ -22,21 +20,26 @@
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div id="root" class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50">
+        </div>
 
     <script>
-        // --- Core React Functions and Helpers ---
-        const { createElement: e, useState, Fragment } = React;
-
-        // Helper function for creating Lucide icon elements (used instead of JSX tags)
-        const Icon = ({ name, className }) => {
-            const IconComponent = lucide[name];
-            return IconComponent ? e(IconComponent, { className }) : null;
-        };
-
-        // --- Main Component ---
-        const CubaFreedomSite = () => {
-            const [posts, setPosts] = useState([
+        // --- 1. State and Data Management ---
+        let state = {
+            currentView: 'home',
+            isAdmin: false,
+            showAdminLogin: false,
+            showPostForm: false,
+            editingPostId: null,
+            password: '',
+            formData: {
+                title: '',
+                excerpt: '',
+                content: '',
+                image: '',
+                date: new Date().toISOString().split('T')[0]
+            },
+            posts: [
                 {
                     id: 1,
                     title: "Standing with the Cuban People",
@@ -53,295 +56,410 @@
                     date: "2025-09-28",
                     image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&h=400&fit=crop"
                 }
-            ]);
+            ]
+        };
 
-            const [isAdmin, setIsAdmin] = useState(false);
-            const [password, setPassword] = useState('');
-            const [showAdminLogin, setShowAdminLogin] = useState(false);
-            const [editingPost, setEditingPost] = useState(null);
-            const [showPostForm, setShowPostForm] = useState(false);
-            const [currentView, setCurrentView] = useState('home');
+        // --- 2. Utility Functions ---
+        const root = document.getElementById('root');
 
-            const [formData, setFormData] = useState({
-                title: '',
-                excerpt: '',
-                content: '',
-                image: '',
-                date: new Date().toISOString().split('T')[0]
-            });
-
-            // --- Handlers ---
-            const handleLogin = () => {
-                if (password === 'admin123') {
-                    setIsAdmin(true);
-                    setShowAdminLogin(false);
-                    setPassword('');
+        // Helper to create elements with classes and content
+        const createEl = (tag, classes = '', content = '', attributes = {}) => {
+            const el = document.createElement(tag);
+            if (classes) el.className = classes;
+            if (content) {
+                if (typeof content === 'string') {
+                    el.innerHTML = content;
                 } else {
-                    alert('Invalid password');
+                    el.appendChild(content);
                 }
-            };
+            }
+            for (const key in attributes) {
+                el.setAttribute(key, attributes[key]);
+            }
+            return el;
+        };
+        
+        // Helper to insert Lucide icons
+        const createIcon = (name, classes = 'w-6 h-6') => {
+            const IconComponent = lucide[name];
+            if (!IconComponent) return createEl('span', classes);
 
-            const handleLogout = () => {
-                setIsAdmin(false);
-                setCurrentView('home');
-            };
+            const div = createEl('div', classes);
+            div.innerHTML = IconComponent.toSvg({ class: classes });
+            return div.firstChild;
+        };
 
-            const handleDeletePost = (id) => {
-                if (window.confirm('Are you sure you want to delete this post?')) {
-                    setPosts(posts.filter(p => p.id !== id));
-                }
-            };
-
-            const handleEditPost = (post) => {
-                setEditingPost(post.id);
-                setFormData({
-                    title: post.title,
-                    excerpt: post.excerpt,
-                    content: post.content,
-                    image: post.image,
-                    date: post.date
-                });
-                setShowPostForm(true);
-            };
-
-            const handleSavePost = () => {
-                if (!formData.title || !formData.excerpt || !formData.content) {
-                    alert('Please fill in all required fields');
-                    return;
-                }
-
-                if (editingPost) {
-                    setPosts(posts.map(p => p.id === editingPost ? { ...formData, id: editingPost } : p));
-                } else {
-                    setPosts([{ ...formData, id: Date.now() }, ...posts]);
-                }
-
-                setFormData({ title: '', excerpt: '', content: '', image: '', date: new Date().toISOString().split('T')[0] });
-                setShowPostForm(false);
-                setEditingPost(null);
-            };
-
-            const handleCancelEdit = () => {
-                setFormData({ title: '', excerpt: '', content: '', image: '', date: new Date().toISOString().split('T')[0] });
-                setShowPostForm(false);
-                setEditingPost(null);
-            };
+        // Rerender function (the core of a vanilla JS app)
+        const render = () => {
+            root.innerHTML = ''; // Clear existing content
+            root.append(Header(), MainContent(), Footer());
             
-            // --- Helper Components for Cleanliness ---
-            const PostCard = ({ post, isAdmin, handleEditPost, handleDeletePost }) => e('div', { key: post.id, className: "bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition" },
-                e('div', { className: "md:flex" },
-                    post.image && e('img', { src: post.image, alt: post.title, className: "md:w-1/3 h-64 object-cover" }),
-                    e('div', { className: "p-8 flex-1" },
-                        e('div', { className: "flex justify-between items-start mb-4" },
-                            e('div', null,
-                                e('p', { className: "text-sm text-gray-500 mb-2" }, new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })),
-                                e('h3', { className: "text-2xl font-bold mb-3" }, post.title)
-                            ),
-                            isAdmin && e('div', { className: "flex space-x-2" },
-                                e('button', { onClick: () => handleEditPost(post), className: "text-blue-600 hover:text-blue-700" }, e(Icon, { name: 'Edit', className: "w-5 h-5" })),
-                                e('button', { onClick: () => handleDeletePost(post.id), className: "text-red-600 hover:text-red-700" }, e(Icon, { name: 'Trash2', className: "w-5 h-5" }))
-                            )
-                        ),
-                        e('p', { className: "text-gray-600 mb-4" }, post.content)
-                    )
+            // Render Modals (always appended but hidden/shown with classes)
+            if (state.showAdminLogin) root.append(AdminLoginModal());
+            if (state.showPostForm && state.isAdmin) root.append(PostFormModal());
+        };
+
+        // --- 3. Handlers and Mutators ---
+        const setView = (view) => {
+            state.currentView = view;
+            render();
+        };
+
+        const handleLogin = () => {
+            if (state.password === 'admin123') {
+                state.isAdmin = true;
+                state.showAdminLogin = false;
+                state.password = '';
+                render();
+            } else {
+                alert('Invalid password');
+            }
+        };
+
+        const handleLogout = () => {
+            state.isAdmin = false;
+            state.currentView = 'home';
+            render();
+        };
+
+        const handleEditPost = (post) => {
+            state.editingPostId = post.id;
+            state.formData = { ...post };
+            state.showPostForm = true;
+            render();
+        };
+
+        const handleDeletePost = (id) => {
+            if (confirm('Are you sure you want to delete this post?')) {
+                state.posts = state.posts.filter(p => p.id !== id);
+                render();
+            }
+        };
+
+        const handleSavePost = () => {
+            if (!state.formData.title || !state.formData.excerpt || !state.formData.content) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            if (state.editingPostId) {
+                state.posts = state.posts.map(p => p.id === state.editingPostId ? { ...state.formData, id: state.editingPostId } : p);
+            } else {
+                state.posts = [{ ...state.formData, id: Date.now() }, ...state.posts];
+            }
+
+            // Reset form and close modal
+            state.formData = { title: '', excerpt: '', content: '', image: '', date: new Date().toISOString().split('T')[0] };
+            state.showPostForm = false;
+            state.editingPostId = null;
+            render();
+        };
+
+        // --- 4. Component Builders (Creating DOM Elements) ---
+        
+        const Header = () => {
+            const navButtons = [
+                { name: 'Home', view: 'home' },
+                { name: 'About', view: 'about' },
+                { name: 'News', view: 'posts' },
+                { name: 'Contact', view: 'contact' }
+            ].map(item => createEl('button', 'text-gray-700 hover:text-blue-600 transition', item.name, { onclick: () => setView(item.view) }));
+
+            const adminButton = state.isAdmin
+                ? createEl('button', 'bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition', 'Logout', { onclick: handleLogout })
+                : createEl('button', 'bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition', 'Admin', { onclick: () => { state.showAdminLogin = true; render(); } });
+
+            const nav = createEl('nav', 'flex items-center space-x-6');
+            nav.append(...navButtons, adminButton);
+
+            const branding = createEl('div', 'flex items-center space-x-3');
+            branding.append(
+                createIcon('Globe', 'w-10 h-10 text-blue-600'),
+                createEl('div', null, 
+                    createEl('h1', 'text-2xl font-bold text-gray-900', 'Cuba Freedom & Peace'),
+                    createEl('p', 'text-sm text-gray-600', 'Unidos por la libertad y la paz')
                 )
             );
 
-            // --- Views ---
-
-            const HomeView = () => e(Fragment, null,
-                e('div', { className: "text-center mb-16" },
-                    e('h2', { className: "text-5xl font-bold text-gray-900 mb-6" }, "Together for Freedom and Peace in Cuba"),
-                    e('p', { className: "text-xl text-gray-600 max-w-3xl mx-auto mb-8" }, "We advocate for human rights, democracy, and peaceful change in Cuba. Join us in supporting the Cuban people's quest for freedom and dignity."),
-                    e('button', { onClick: () => setCurrentView('posts'), className: "bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition inline-flex items-center" }, 
-                        "Learn More ", e(Icon, { name: 'ChevronRight', className: "ml-2 w-5 h-5" })
-                    )
-                ),
-                e('div', { className: "grid md:grid-cols-3 gap-8 mb-16" },
-                    e('div', { className: "bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition" },
-                        e(Icon, { name: 'Heart', className: "w-12 h-12 text-red-500 mb-4" }),
-                        e('h3', { className: "text-2xl font-bold mb-3" }, "Human Rights"),
-                        e('p', { className: "text-gray-600" }, "Advocating for the fundamental rights and freedoms of all Cuban citizens.")
-                    ),
-                    e('div', { className: "bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition" },
-                        e(Icon, { name: 'Users', className: "w-12 h-12 text-blue-500 mb-4" }),
-                        e('h3', { className: "text-2xl font-bold mb-3" }, "Unity"),
-                        e('p', { className: "text-gray-600" }, "Building bridges and fostering solidarity within and beyond Cuban communities.")
-                    ),
-                    e('div', { className: "bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition" },
-                        e(Icon, { name: 'BookOpen', className: "w-12 h-12 text-green-500 mb-4" }),
-                        e('h3', { className: "text-2xl font-bold mb-3" }, "Education"),
-                        e('p', { className: "text-gray-600" }, "Raising awareness about Cuba's situation and promoting informed dialogue.")
-                    )
-                ),
-                e('div', { className: "mb-16" },
-                    e('div', { className: "flex justify-between items-center mb-8" },
-                        e('h3', { className: "text-3xl font-bold" }, "Latest News"),
-                        e('button', { onClick: () => setCurrentView('posts'), className: "text-blue-600 hover:text-blue-700 font-semibold" }, "View All →")
-                    ),
-                    e('div', { className: "grid md:grid-cols-2 gap-8" },
-                        posts.slice(0, 2).map(post => e('div', { key: post.id, className: "bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition" },
-                            post.image && e('img', { src: post.image, alt: post.title, className: "w-full h-48 object-cover" }),
-                            e('div', { className: "p-6" },
-                                e('p', { className: "text-sm text-gray-500 mb-2" }, new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })),
-                                e('h4', { className: "text-xl font-bold mb-3" }, post.title),
-                                e('p', { className: "text-gray-600 mb-4" }, post.excerpt),
-                                e('button', { className: "text-blue-600 font-semibold hover:text-blue-700" }, "Read More →")
-                            )
-                        ))
-                    )
-                )
-            );
-
-            const PostsView = () => e('div', null,
-                e('div', { className: "flex justify-between items-center mb-8" },
-                    e('h2', { className: "text-4xl font-bold" }, "News & Updates"),
-                    isAdmin && e('button', { onClick: () => { setShowPostForm(true); setEditingPost(null); }, className: "bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition inline-flex items-center" },
-                        e(Icon, { name: 'Plus', className: "w-5 h-5 mr-2" }), "New Post"
-                    )
-                ),
-                e('div', { className: "space-y-8" },
-                    posts.map(post => e(PostCard, { key: post.id, post, isAdmin, handleEditPost, handleDeletePost }))
-                )
-            );
-
-            // --- Main Render (Top Level) ---
-            return e('div', { className: "min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50" },
-                // Header
-                e('header', { className: "bg-white shadow-md sticky top-0 z-50" },
-                    e('div', { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" },
-                        e('div', { className: "flex justify-between items-center py-4" },
-                            e('div', { className: "flex items-center space-x-3" },
-                                e(Icon, { name: 'Globe', className: "w-10 h-10 text-blue-600" }),
-                                e('div', null,
-                                    e('h1', { className: "text-2xl font-bold text-gray-900" }, "Cuba Freedom & Peace"),
-                                    e('p', { className: "text-sm text-gray-600" }, "Unidos por la libertad y la paz")
-                                )
-                            ),
-                            e('nav', { className: "flex items-center space-x-6" },
-                                e('button', { onClick: () => setCurrentView('home'), className: "text-gray-700 hover:text-blue-600 transition" }, "Home"),
-                                e('button', { onClick: () => setCurrentView('about'), className: "text-gray-700 hover:text-blue-600 transition" }, "About"),
-                                e('button', { onClick: () => setCurrentView('posts'), className: "text-gray-700 hover:text-blue-600 transition" }, "News"),
-                                e('button', { onClick: () => setCurrentView('contact'), className: "text-gray-700 hover:text-blue-600 transition" }, "Contact"),
-                                isAdmin ? 
-                                    e('button', { onClick: handleLogout, className: "bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition" }, "Logout") : 
-                                    e('button', { onClick: () => setShowAdminLogin(true), className: "bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition" }, "Admin")
-                            )
-                        )
-                    )
-                ),
-
-                // Admin Login Modal
-                showAdminLogin && e('div', { className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" },
-                    e('div', { className: "bg-white rounded-lg p-8 max-w-md w-full mx-4" },
-                        e('div', { className: "flex justify-between items-center mb-6" },
-                            e('h2', { className: "text-2xl font-bold" }, "Admin Login"),
-                            e('button', { onClick: () => setShowAdminLogin(false), className: "text-gray-500 hover:text-gray-700" }, e(Icon, { name: 'X', className: "w-6 h-6" }))
-                        ),
-                        e('input', { type: "password", value: password, onChange: (e) => setPassword(e.target.value), onKeyPress: (e) => e.key === 'Enter' && handleLogin(), placeholder: "Enter password", className: "w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent" }),
-                        e('button', { onClick: handleLogin, className: "w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition" }, "Login"),
-                        e('p', { className: "text-sm text-gray-500 mt-4" }, "Demo password: admin123")
-                    )
-                ),
-
-                // Post Form Modal (Full Form Content)
-                showPostForm && isAdmin && e('div', { className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto" },
-                    e('div', { className: "bg-white rounded-lg p-8 max-w-2xl w-full mx-4 my-8" },
-                        e('div', { className: "flex justify-between items-center mb-6" },
-                            e('h2', { className: "text-2xl font-bold" }, editingPost ? 'Edit Post' : 'New Post'),
-                            e('button', { onClick: handleCancelEdit, className: "text-gray-500 hover:text-gray-700" }, e(Icon, { name: 'X', className: "w-6 h-6" }))
-                        ),
-                        e('div', { className: "space-y-4" },
-                            e('div', null,
-                                e('label', { className: "block text-sm font-medium text-gray-700 mb-2" }, "Title *"),
-                                e('input', { type: "text", value: formData.title, onChange: (e) => setFormData({...formData, title: e.target.value}), className: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" })
-                            ),
-                            e('div', null,
-                                e('label', { className: "block text-sm font-medium text-gray-700 mb-2" }, "Excerpt *"),
-                                e('input', { type: "text", value: formData.excerpt, onChange: (e) => setFormData({...formData, excerpt: e.target.value}), className: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" })
-                            ),
-                            e('div', null,
-                                e('label', { className: "block text-sm font-medium text-gray-700 mb-2" }, "Content *"),
-                                e('textarea', { value: formData.content, onChange: (e) => setFormData({...formData, content: e.target.value}), rows: 6, className: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" })
-                            ),
-                            e('div', null,
-                                e('label', { className: "block text-sm font-medium text-gray-700 mb-2" }, "Image URL"),
-                                e('input', { type: "text", value: formData.image, onChange: (e) => setFormData({...formData, image: e.target.value}), className: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" })
-                            ),
-                            e('div', null,
-                                e('label', { className: "block text-sm font-medium text-gray-700 mb-2" }, "Date"),
-                                e('input', { type: "date", value: formData.date, onChange: (e) => setFormData({...formData, date: e.target.value}), className: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" })
-                            )
-                        ),
-                        e('div', { className: "flex space-x-4 mt-6" },
-                            e('button', { onClick: handleSavePost, className: "flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center" }, e(Icon, { name: 'Save', className: "w-5 h-5 mr-2" }), "Save Post"),
-                            e('button', { onClick: handleCancelEdit, className: "flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 transition" }, "Cancel")
-                        )
-                    )
-                ),
-
-                // Main Content Area (View Switcher)
-                e('main', { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" },
-                    currentView === 'home' && e(HomeView),
-                    currentView === 'posts' && e(PostsView),
-                    currentView === 'about' && e('div', { className: "max-w-4xl mx-auto" },
-                        e('h2', { className: "text-4xl font-bold mb-8" }, "About Our Mission"),
-                        e('div', { className: "bg-white rounded-xl shadow-lg p-8 mb-8" },
-                            e('p', { className: "text-lg text-gray-700 mb-6" }, "Cuba Freedom & Peace is dedicated to supporting the Cuban people in their pursuit of democracy, human rights, and self-determination. We believe in peaceful dialogue, international solidarity, and the power of collective action to bring about positive change."),
-                            e('p', { className: "text-lg text-gray-700 mb-6" }, "Our organization works to amplify the voices of Cuban civil society, provide accurate information about the situation in Cuba, and advocate for policies that support freedom and peace on the island."),
-                            e('p', { className: "text-lg text-gray-700" }, "We stand with all those who work peacefully for a better future for Cuba, where human rights are respected, democracy flourishes, and all citizens can live in dignity and freedom.")
-                        )
-                    ),
-                    currentView === 'contact' && e('div', { className: "max-w-2xl mx-auto" },
-                        e('h2', { className: "text-4xl font-bold mb-8" }, "Get In Touch"),
-                        e('div', { className: "bg-white rounded-xl shadow-lg p-8" },
-                            e('div', { className: "space-y-6" },
-                                e('div', null, e('label', { className: "block text-sm font-medium text-gray-700 mb-2" }, "Name"), e('input', { type: "text", className: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" })),
-                                e('div', null, e('label', { className: "block text-sm font-medium text-gray-700 mb-2" }, "Email"), e('input', { type: "email", className: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" })),
-                                e('div', null, e('label', { className: "block text-sm font-medium text-gray-700 mb-2" }, "Message"), e('textarea', { rows: 6, className: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" })),
-                                e('button', { onClick: (e) => { e.preventDefault(); alert('Message sent! (Demo)'); }, className: "w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-semibold" }, "Send Message")
-                            )
-                        )
-                    )
-                ),
-
-                // Footer
-                e('footer', { className: "bg-gray-900 text-white mt-20" },
-                    e('div', { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" },
-                        e('div', { className: "grid md:grid-cols-3 gap-8 mb-8" },
-                            e('div', null,
-                                e('h3', { className: "text-xl font-bold mb-4" }, "Cuba Freedom & Peace"),
-                                e('p', { className: "text-gray-400" }, "Supporting democracy and human rights in Cuba through peaceful advocacy and solidarity.")
-                            ),
-                            e('div', null,
-                                e('h3', { className: "text-xl font-bold mb-4" }, "Quick Links"),
-                                e('div', { className: "space-y-2" },
-                                    e('button', { onClick: () => setCurrentView('home'), className: "block text-gray-400 hover:text-white transition" }, "Home"),
-                                    e('button', { onClick: () => setCurrentView('about'), className: "block text-gray-400 hover:text-white transition" }, "About"),
-                                    e('button', { onClick: () => setCurrentView('posts'), className: "block text-gray-400 hover:text-white transition" }, "News"),
-                                    e('button', { onClick: () => setCurrentView('contact'), className: "block text-gray-400 hover:text-white transition" }, "Contact")
-                                )
-                            ),
-                            e('div', null,
-                                e('h3', { className: "text-xl font-bold mb-4" }, "Connect"),
-                                e('p', { className: "text-gray-400 mb-4" }, "Stay updated with our latest news and initiatives."),
-                                e('div', { className: "flex space-x-4" },
-                                    e(Icon, { name: 'Globe', className: "w-6 h-6 text-gray-400 hover:text-white cursor-pointer transition" }),
-                                    e(Icon, { name: 'Heart', className: "w-6 h-6 text-gray-400 hover:text-white cursor-pointer transition" }),
-                                    e(Icon, { name: 'Users', className: "w-6 h-6 text-gray-400 hover:text-white cursor-pointer transition" })
-                                )
-                            )
-                        ),
-                        e('div', { className: "border-t border-gray-800 pt-8 text-center text-gray-400" },
-                            e('p', null, "© 2025 Cuba Freedom & Peace. All rights reserved.")
-                        )
-                    )
+            return createEl('header', 'bg-white shadow-md sticky top-0 z-50', 
+                createEl('div', 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8', 
+                    createEl('div', 'flex justify-between items-center py-4', null, [branding, nav])
                 )
             );
         };
 
-        // Final Render
-        ReactDOM.render(e(CubaFreedomSite), document.getElementById('root'));
+        const HomeView = () => {
+            const section = createEl('div');
+
+            const hero = createEl('div', 'text-center mb-16');
+            hero.append(
+                createEl('h2', 'text-5xl font-bold text-gray-900 mb-6', 'Together for Freedom and Peace in Cuba'),
+                createEl('p', 'text-xl text-gray-600 max-w-3xl mx-auto mb-8', "We advocate for human rights, democracy, and peaceful change in Cuba. Join us in supporting the Cuban people's quest for freedom and dignity."),
+                createEl('button', 'bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition inline-flex items-center', 'Learn More', { onclick: () => setView('posts') })
+            );
+            hero.lastChild.append(createIcon('ChevronRight', 'ml-2 w-5 h-5'));
+            section.append(hero);
+
+            // Feature Cards
+            const features = createEl('div', 'grid md:grid-cols-3 gap-8 mb-16');
+            const featureData = [
+                { icon: 'Heart', color: 'red-500', title: 'Human Rights', text: 'Advocating for the fundamental rights and freedoms of all Cuban citizens.' },
+                { icon: 'Users', color: 'blue-500', title: 'Unity', text: 'Building bridges and fostering solidarity within and beyond Cuban communities.' },
+                { icon: 'BookOpen', color: 'green-500', title: 'Education', text: 'Raising awareness about Cuba\'s situation and promoting informed dialogue.' }
+            ];
+            featureData.forEach(data => {
+                const card = createEl('div', 'bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition');
+                card.append(
+                    createIcon(data.icon, `w-12 h-12 text-${data.color} mb-4`),
+                    createEl('h3', 'text-2xl font-bold mb-3', data.title),
+                    createEl('p', 'text-gray-600', data.text)
+                );
+                features.append(card);
+            });
+            section.append(features);
+
+            // Latest News Preview
+            const newsSection = createEl('div', 'mb-16');
+            const newsHeader = createEl('div', 'flex justify-between items-center mb-8');
+            newsHeader.append(
+                createEl('h3', 'text-3xl font-bold', 'Latest News'),
+                createEl('button', 'text-blue-600 hover:text-blue-700 font-semibold', 'View All →', { onclick: () => setView('posts') })
+            );
+            newsSection.append(newsHeader);
+
+            const newsGrid = createEl('div', 'grid md:grid-cols-2 gap-8');
+            state.posts.slice(0, 2).forEach(post => {
+                const card = createEl('div', 'bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition');
+                if (post.image) card.append(createEl('img', 'w-full h-48 object-cover', null, { src: post.image, alt: post.title }));
+                const cardBody = createEl('div', 'p-6');
+                cardBody.append(
+                    createEl('p', 'text-sm text-gray-500 mb-2', new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })),
+                    createEl('h4', 'text-xl font-bold mb-3', post.title),
+                    createEl('p', 'text-gray-600 mb-4', post.excerpt),
+                    createEl('button', 'text-blue-600 font-semibold hover:text-blue-700', 'Read More →')
+                );
+                card.append(cardBody);
+                newsGrid.append(card);
+            });
+            newsSection.append(newsGrid);
+            section.append(newsSection);
+
+            return section;
+        };
+        
+        const PostsView = () => {
+            const container = createEl('div');
+
+            const header = createEl('div', 'flex justify-between items-center mb-8');
+            header.append(createEl('h2', 'text-4xl font-bold', 'News & Updates'));
+
+            if (state.isAdmin) {
+                const newPostButton = createEl('button', 'bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition inline-flex items-center', 'New Post', { onclick: () => { state.showPostForm = true; state.editingPostId = null; state.formData = { title: '', excerpt: '', content: '', image: '', date: new Date().toISOString().split('T')[0] }; render(); } });
+                newPostButton.prepend(createIcon('Plus', 'w-5 h-5 mr-2'));
+                header.append(newPostButton);
+            }
+            container.append(header);
+
+            const postList = createEl('div', 'space-y-8');
+            state.posts.forEach(post => {
+                const postEl = PostCard(post);
+                postList.append(postEl);
+            });
+            container.append(postList);
+
+            return container;
+        };
+
+        const PostCard = (post) => {
+            const card = createEl('div', 'bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition');
+            const flexContainer = createEl('div', 'md:flex');
+
+            if (post.image) flexContainer.append(createEl('img', 'md:w-1/3 h-64 object-cover', null, { src: post.image, alt: post.title }));
+
+            const body = createEl('div', 'p-8 flex-1');
+            const header = createEl('div', 'flex justify-between items-start mb-4');
+
+            const titleBlock = createEl('div');
+            titleBlock.append(
+                createEl('p', 'text-sm text-gray-500 mb-2', new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })),
+                createEl('h3', 'text-2xl font-bold mb-3', post.title)
+            );
+            header.append(titleBlock);
+
+            if (state.isAdmin) {
+                const actions = createEl('div', 'flex space-x-2');
+                actions.append(
+                    createEl('button', 'text-blue-600 hover:text-blue-700', null, { onclick: () => handleEditPost(post) }).appendChild(createIcon('Edit', 'w-5 h-5')),
+                    createEl('button', 'text-red-600 hover:text-red-700', null, { onclick: () => handleDeletePost(post.id) }).appendChild(createIcon('Trash2', 'w-5 h-5'))
+                );
+                header.append(actions);
+            }
+            
+            body.append(header, createEl('p', 'text-gray-600 mb-4', post.content));
+            flexContainer.append(body);
+            card.append(flexContainer);
+            return card;
+        };
+
+
+        const MainContent = () => {
+            const main = createEl('main', 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12');
+            
+            let viewEl;
+            if (state.currentView === 'home') {
+                viewEl = HomeView();
+            } else if (state.currentView === 'posts') {
+                viewEl = PostsView();
+            } else if (state.currentView === 'about') {
+                viewEl = createEl('div', 'max-w-4xl mx-auto', 
+                    createEl('h2', 'text-4xl font-bold mb-8', 'About Our Mission'),
+                    createEl('div', 'bg-white rounded-xl shadow-lg p-8 mb-8', 
+                        createEl('p', 'text-lg text-gray-700 mb-6', 'Cuba Freedom & Peace is dedicated to supporting the Cuban people in their pursuit of democracy, human rights, and self-determination. We believe in peaceful dialogue, international solidarity, and the power of collective action to bring about positive change.'),
+                        createEl('p', 'text-lg text-gray-700', 'We stand with all those who work peacefully for a better future for Cuba, where human rights are respected, democracy flourishes, and all citizens can live in dignity and freedom.')
+                    )
+                );
+            } else if (state.currentView === 'contact') {
+                const form = createEl('div', 'bg-white rounded-xl shadow-lg p-8 space-y-6');
+                form.append(
+                    createEl('input', 'w-full px-4 py-3 border border-gray-300 rounded-lg', null, { type: 'text', placeholder: 'Name' }),
+                    createEl('input', 'w-full px-4 py-3 border border-gray-300 rounded-lg', null, { type: 'email', placeholder: 'Email' }),
+                    createEl('textarea', 'w-full px-4 py-3 border border-gray-300 rounded-lg', null, { rows: 6, placeholder: 'Message' }),
+                    createEl('button', 'w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-semibold', 'Send Message', { onclick: () => alert('Message sent! (Demo)') })
+                );
+                viewEl = createEl('div', 'max-w-2xl mx-auto',
+                    createEl('h2', 'text-4xl font-bold mb-8', 'Get In Touch'),
+                    form
+                );
+            }
+
+            if (viewEl) main.append(viewEl);
+            return main;
+        };
+
+        const Footer = () => {
+            const footer = createEl('footer', 'bg-gray-900 text-white mt-20');
+            const container = createEl('div', 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12');
+
+            const contentGrid = createEl('div', 'grid md:grid-cols-3 gap-8 mb-8');
+
+            const logoBlock = createEl('div');
+            logoBlock.append(
+                createEl('h3', 'text-xl font-bold mb-4', 'Cuba Freedom & Peace'),
+                createEl('p', 'text-gray-400', 'Supporting democracy and human rights in Cuba through peaceful advocacy and solidarity.')
+            );
+            
+            const linkBlock = createEl('div');
+            linkBlock.append(
+                createEl('h3', 'text-xl font-bold mb-4', 'Quick Links'),
+                createEl('div', 'space-y-2', null, [
+                    createEl('button', 'block text-gray-400 hover:text-white transition', 'Home', { onclick: () => setView('home') }),
+                    createEl('button', 'block text-gray-400 hover:text-white transition', 'About', { onclick: () => setView('about') }),
+                    createEl('button', 'block text-gray-400 hover:text-white transition', 'News', { onclick: () => setView('posts') }),
+                    createEl('button', 'block text-gray-400 hover:text-white transition', 'Contact', { onclick: () => setView('contact') })
+                ])
+            );
+
+            const connectBlock = createEl('div');
+            connectBlock.append(
+                createEl('h3', 'text-xl font-bold mb-4', 'Connect'),
+                createEl('p', 'text-gray-400 mb-4', 'Stay updated with our latest news and initiatives.'),
+                createEl('div', 'flex space-x-4', null, [
+                    createIcon('Globe', 'w-6 h-6 text-gray-400 hover:text-white cursor-pointer transition'),
+                    createIcon('Heart', 'w-6 h-6 text-gray-400 hover:text-white cursor-pointer transition'),
+                    createIcon('Users', 'w-6 h-6 text-gray-400 hover:text-white cursor-pointer transition')
+                ])
+            );
+
+            contentGrid.append(logoBlock, linkBlock, connectBlock);
+
+            const copyright = createEl('div', 'border-t border-gray-800 pt-8 text-center text-gray-400', '© 2025 Cuba Freedom & Peace. All rights reserved.');
+            
+            container.append(contentGrid, copyright);
+            footer.append(container);
+            return footer;
+        };
+
+        const AdminLoginModal = () => {
+            const modal = createEl('div', 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50');
+            const content = createEl('div', 'bg-white rounded-lg p-8 max-w-md w-full mx-4');
+
+            const header = createEl('div', 'flex justify-between items-center mb-6');
+            header.append(
+                createEl('h2', 'text-2xl font-bold', 'Admin Login'),
+                createEl('button', 'text-gray-500 hover:text-gray-700', null, { onclick: () => { state.showAdminLogin = false; render(); } }).appendChild(createIcon('X', 'w-6 h-6'))
+            );
+
+            const passwordInput = createEl('input', 'w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent', null, { type: 'password', placeholder: 'Enter password' });
+            passwordInput.oninput = (e) => { state.password = e.target.value; };
+            passwordInput.onkeypress = (e) => { if (e.key === 'Enter') handleLogin(); };
+
+            const loginButton = createEl('button', 'w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition', 'Login', { onclick: handleLogin });
+            
+            content.append(header, passwordInput, loginButton, createEl('p', 'text-sm text-gray-500 mt-4', 'Demo password: admin123'));
+            modal.append(content);
+            return modal;
+        };
+        
+        const PostFormModal = () => {
+            const modal = createEl('div', 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto');
+            const content = createEl('div', 'bg-white rounded-lg p-8 max-w-2xl w-full mx-4 my-8');
+
+            const handleCancel = () => {
+                state.formData = { title: '', excerpt: '', content: '', image: '', date: new Date().toISOString().split('T')[0] };
+                state.showPostForm = false;
+                state.editingPostId = null;
+                render();
+            };
+
+            const header = createEl('div', 'flex justify-between items-center mb-6');
+            header.append(
+                createEl('h2', 'text-2xl font-bold', state.editingPostId ? 'Edit Post' : 'New Post'),
+                createEl('button', 'text-gray-500 hover:text-gray-700', null, { onclick: handleCancel }).appendChild(createIcon('X', 'w-6 h-6'))
+            );
+
+            const inputField = (label, type, key, isRequired = false, rows = 1) => {
+                const container = createEl('div');
+                const labelEl = createEl('label', 'block text-sm font-medium text-gray-700 mb-2', label + (isRequired ? ' *' : ''));
+                let inputEl;
+
+                if (type === 'textarea') {
+                    inputEl = createEl('textarea', 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', null, { rows: rows });
+                } else {
+                    inputEl = createEl('input', 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', null, { type: type });
+                }
+
+                inputEl.value = state.formData[key] || '';
+                inputEl.oninput = (e) => {
+                    state.formData = { ...state.formData, [key]: e.target.value };
+                };
+                container.append(labelEl, inputEl);
+                return container;
+            };
+
+            const formBody = createEl('div', 'space-y-4');
+            formBody.append(
+                inputField('Title', 'text', 'title', true),
+                inputField('Excerpt', 'text', 'excerpt', true),
+                inputField('Content', 'textarea', 'content', true, 6),
+                inputField('Image URL', 'text', 'image'),
+                inputField('Date', 'date', 'date')
+            );
+            
+            const actionButtons = createEl('div', 'flex space-x-4 mt-6');
+            const saveButton = createEl('button', 'flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center', 'Save Post', { onclick: handleSavePost });
+            saveButton.prepend(createIcon('Save', 'w-5 h-5 mr-2'));
+            const cancelButton = createEl('button', 'flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 transition', 'Cancel', { onclick: handleCancel });
+
+            actionButtons.append(saveButton, cancelButton);
+
+            content.append(header, formBody, actionButtons);
+            modal.append(content);
+            return modal;
+        };
+
+        // --- 5. Initial Render ---
+        render();
+
     </script>
 </body>
 </html>
