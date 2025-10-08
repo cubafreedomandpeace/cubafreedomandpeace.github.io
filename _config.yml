@@ -1,0 +1,19 @@
+title: Cuba Freedom
+email: contact@cubafreedom.org
+description: "Blog about the situation in Cuba – Noticias y opiniones."
+baseurl: "" # leave empty for github.io
+url: "https://cubafreedom.github.io"
+language: en
+
+theme: minima
+
+plugins:
+  - jekyll-feed
+
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: post
+      author: "Cuba Freedom"
